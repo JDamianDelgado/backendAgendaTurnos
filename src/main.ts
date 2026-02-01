@@ -15,7 +15,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://pagina-elizabeth.vercel.app/'],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   });
 
