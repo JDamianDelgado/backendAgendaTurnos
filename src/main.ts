@@ -15,7 +15,12 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+      process.env.FRONTEND_URL,
+      process.env.FRONTEND_LOCAL,
+      process.env.FRONTEND_LOCAL2,
+    ],
+    // origin: true,
     credentials: true,
   });
 
