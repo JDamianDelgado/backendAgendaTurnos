@@ -15,16 +15,12 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      process.env.FRONTEND_URL,
-      process.env.FRONTEND_LOCAL,
-      process.env.FRONTEND_LOCAL2,
-    ],
+    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_LOCAL2],
     // origin: true,
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT || 3000);
   console.log(`Servidor corriendo en el puerto ${process.env.PORT} 👌 `);
 }
 bootstrap();
