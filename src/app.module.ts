@@ -8,6 +8,7 @@ import { HorariosModule } from './horarios/horarios.module';
 import { AuthModule } from './auth/auth.module';
 import { MensajesModule } from './mensajes/mensajes.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppController } from './PRUEBA/app.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,8 +21,9 @@ import { ConfigModule } from '@nestjs/config';
     HorariosModule,
     AuthModule,
     MensajesModule,
+    AppModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}
