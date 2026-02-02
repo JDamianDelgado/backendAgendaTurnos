@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from 'config/supabase';
+import { typeOrmConfig } from './config/supabase';
 import { UsersModule } from './users/users.module';
 import { TurnosModule } from './turnos/turnos.module';
 import { ProfesionalModule } from './profesional/profesional.module';
