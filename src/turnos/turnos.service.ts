@@ -157,17 +157,10 @@ export class TurnosService {
     }
   }
 
-  async misTurnos(idUser: string) {
+  async misTurnosProfesional(idUser: string) {
     const user = await this.userRepository.findOne({
       where: { idUser },
-      relations: {
-        turnos: {
-          profesional: {
-            UserProfesional: true,
-          },
-          user: true,
-        },
-      },
+      relations: ['TurnosProfesional'],
     });
 
     if (!user) {
@@ -187,6 +180,36 @@ export class TurnosService {
       },
       profesional: {
         idProfesional: turno.profesional.idProfesional,
+        imagenUrl: turno.profesional.imagenUrl,
+        UserProfesional: {
+          nombre: turno.profesional.UserProfesional.nombre,
+          apellido: turno.profesional.UserProfesional.apellido,
+        },
+      },
+    }));
+  }
+
+  async misTurnosPaciente(idUser: string) {
+    const user = await this.userRepository.findOne({
+      where: { idUser },
+      relations: [
+        'turnos',
+        'turnos.profesional',
+        'turnos.profesional.UserProfesional',
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException('No se encontro usuario');
+    }
+
+    return user.turnos.map((turno) => ({
+      idTurno: turno.idTurno,
+      fecha: turno.fecha,
+      hora: turno.hora,
+      estado: turno.estado,
+      creado: turno.creado,
+      profesional: {
         imagenUrl: turno.profesional.imagenUrl,
         UserProfesional: {
           nombre: turno.profesional.UserProfesional.nombre,

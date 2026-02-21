@@ -38,9 +38,10 @@ export class AuthService {
       throw new BadRequestException('Usuario ya registrado');
     }
     const hashPassword = await bcrypt.hash(createAuthDto.password, 10);
-
+    const emailLowerCase = createAuthDto.email.toLowerCase();
     const user = this.userRepository.create({
       ...createAuthDto,
+      email: emailLowerCase,
       password: hashPassword,
       role: createAuthDto.role ? (createAuthDto.role as userRole) : undefined,
     });

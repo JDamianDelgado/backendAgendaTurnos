@@ -45,7 +45,7 @@ export class TurnosController {
   @Get('misturnos')
   @UseGuards(JwtAuthGuard)
   misTurnosPaciente(@CurrentUser() user: { sub: string; role: userRole }) {
-    return this.turnosService.misTurnos(user.sub);
+    return this.turnosService.misTurnosPaciente(user.sub);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

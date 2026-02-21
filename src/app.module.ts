@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/supabase';
 import { UsersModule } from './users/users.module';
@@ -8,7 +8,8 @@ import { HorariosModule } from './horarios/horarios.module';
 import { AuthModule } from './auth/auth.module';
 import { MensajesModule } from './mensajes/mensajes.module';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './PRUEBA/app.controller';
+import { LoggerMiddleware } from './logger/logger.middleware';
+import { ConversacionModule } from './conversacion/conversacion.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,9 +22,13 @@ import { AppController } from './PRUEBA/app.controller';
     HorariosModule,
     AuthModule,
     MensajesModule,
-    AppModule,
+    ConversacionModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

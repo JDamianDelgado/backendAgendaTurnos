@@ -1,3 +1,4 @@
+// import { Conversacion } from 'src/conversacion/entities/conversacion.entity';
 import { Profesional } from 'src/profesional/entities/profesional.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
@@ -5,6 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  // OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -30,6 +32,9 @@ export class Turnos {
 
   @Column({ type: 'time' })
   hora: string;
+
+  // @OneToOne(() => Conversacion, (c) => c.turno)
+  // conversacion: Conversacion;
 
   @Column({
     type: 'enum',

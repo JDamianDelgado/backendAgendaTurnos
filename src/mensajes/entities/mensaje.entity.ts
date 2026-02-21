@@ -1,42 +1,32 @@
+import { Conversacion } from 'src/conversacion/entities/conversacion.entity';
 import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ManyToOne,
 } from 'typeorm';
 
-export enum EstadoMensaje {
-  ENVIADO = 'ENVIADO',
-  LEIDO = 'LEIDO',
-  CANCELADO = 'CANCELADO',
-}
-
-export enum EmisorMensaje {
-  PACIENTE = 'PACIENTE',
-  PROFESIONAL = 'PROFESIONAL',
-  SISTEMA = 'SISTEMA',
-}
-
-@Entity('mensajes')
+@Entity()
 export class Mensaje {
   @PrimaryGeneratedColumn('uuid')
   idMensaje: string;
 
-  @Column()
-  idPaciente: string;
-
-  @Column()
-  idProfesional: string;
-
   @Column('text')
   contenido: string;
 
-  @Column({ type: 'enum', enum: EmisorMensaje })
-  emisor: EmisorMensaje;
+  @Column({
+    type: 'enum',
+    enum: ['PACIENTE', 'PROFESIONAL'],
+  })
+  emisor: 'PACIENTE' | 'PROFESIONAL';
 
-  @Column({ type: 'enum', enum: EstadoMensaje, default: EstadoMensaje.ENVIADO })
-  estado: EstadoMensaje;
+  @Column({ default: false })
+  leido: boolean;
+
+  @ManyToOne(() => Conversacion, (c) => c.mensajes)
+  conversacion: Conversacion;
 
   @CreateDateColumn()
-  fechaEnvio: Date;
+  createdAt: Date;
 }
