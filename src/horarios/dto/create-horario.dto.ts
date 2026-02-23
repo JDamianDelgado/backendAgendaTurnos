@@ -1,8 +1,11 @@
-import { IsBoolean, IsString, IsNumber } from 'class-validator';
+import { IsBoolean, IsString, IsNumber, IsEnum } from 'class-validator';
+import { DiasSemana } from './dias-horarios.dto';
 
 export class CreateHorarioDto {
-  @IsString()
-  dia: string;
+  @IsEnum(DiasSemana, {
+    message: 'El día debe ser un día válido de la semana en mayusculas',
+  })
+  dia: DiasSemana;
 
   @IsString()
   horaInicio: string;

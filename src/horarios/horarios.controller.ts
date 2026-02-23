@@ -16,6 +16,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { userRole } from 'src/auth/entities/auth.entity';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Console } from 'console';
 
 @Controller('horarios')
 export class HorariosController {

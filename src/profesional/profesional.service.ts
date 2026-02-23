@@ -66,6 +66,7 @@ export class ProfesionalService {
           TurnosProfesional: {
             user: true,
           },
+          Horario: true,
         },
       },
       select: {

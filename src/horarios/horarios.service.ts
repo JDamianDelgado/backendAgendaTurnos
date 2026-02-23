@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -51,7 +52,7 @@ export class HorariosService {
     if (!save || !create) {
       throw new BadRequestException('No se pudo realizar accion ');
     }
-    return { save };
+    return save;
   }
 
   async misHorarios(id: string) {
@@ -98,16 +99,29 @@ export class HorariosService {
   ) {
     const horarioExiste = await this.horarioRepository.findOne({
       where: { idHorario: idHorario },
-      relations: ['Profesional'],
+      relations: {
+        profesional: {
+          UserProfesional: true,
+        },
+      },
     });
+
+    const user = await this.userRepository.findOne({
+      where: { idUser: idUser },
+      relations: ['profesional'],
+    });
+
+    if (!user || user.role !== userRole.PROFESIONAL) {
+      throw new BadRequestException('No se pudo realizar esta accion');
+    }
     if (!horarioExiste) {
       throw new NotFoundException('No se encontro horario');
     }
-    if (horarioExiste.profesional.UserProfesional.idUser !== idUser) {
-      throw new BadRequestException(
-        'No tienes permitido modificar este horario',
-      );
-    }
+    // if (horarioExiste.profesional.UserProfesional.idUser !== user.idUser) {
+    //   throw new BadRequestException(
+    //     'No tienes permitido modificar este horario',
+    //   );
+    // }
     this.horarioRepository.merge(
       horarioExiste,
       updateHorarioDto as DeepPartial<Horarios>,
@@ -117,22 +131,33 @@ export class HorariosService {
 
   async remove(idUser: string, idHorario: string) {
     const findHorario = await this.horarioRepository.findOne({
-      where: { idHorario: idHorario },
-      relations: ['Profesional'],
+      where: { idHorario },
+      relations: {
+        profesional: {
+          UserProfesional: true,
+        },
+      },
     });
+
     if (!findHorario) {
-      throw new NotFoundException('No se encontro horario');
+      throw new NotFoundException('No se encontró el horario');
     }
+
     if (findHorario.profesional.UserProfesional.idUser !== idUser) {
-      throw new BadRequestException('No tienes permitido realizar esta accion');
+      throw new ForbiddenException(
+        'No tienes permiso para eliminar este horario',
+      );
     }
-    const deleteHorario = await this.horarioRepository.delete(
-      findHorario.idHorario,
-    );
-    if (!deleteHorario) {
-      throw new BadRequestException('No se pudo realizar esta accion');
-    } else {
-      return { message: 'Horario eliminado' };
+
+    try {
+      await this.horarioRepository.delete(idHorario);
+      return idHorario;
+    } catch (error) {
+      throw new BadRequestException(
+        'No se puede eliminar el horario porque tiene turnos asociados',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        error,
+      );
     }
   }
 }
