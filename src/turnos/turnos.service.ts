@@ -29,7 +29,23 @@ export class TurnosService {
   private normalizarHora(hora: string): string {
     return hora.slice(0, 5);
   }
-  //creacion de horairos con slots
+
+  private obtenerDiaTexto(fecha: string): string {
+    const dias = [
+      'DOMINGO',
+      'LUNES',
+      'MARTES',
+      'MIERCOLES',
+      'JUEVES',
+      'VIERNES',
+      'SABADO',
+    ];
+
+    const date = new Date(fecha + 'T00:00:00');
+    return dias[date.getDay()];
+  }
+
+  // Creación de slots según hora inicio, fin y duración
   private generarSlots(
     inicio: string,
     fin: string,
@@ -53,15 +69,26 @@ export class TurnosService {
     return date.toTimeString().slice(0, 5);
   }
 
-  //busqueda de turnos disponibles
+  // Búsqueda de turnos disponibles según día y horarios del profesional
   async TurnosDisponibles(idProfesional: string, fecha: string) {
     const profesional = await this.profesionalRepository.findOne({
       where: { idProfesional },
-      relations: ['Horario', 'TurnosProfesional'],
+      relations: ['Horario'],
     });
 
     if (!profesional || !profesional.Horario.length) {
       throw new BadRequestException('El profesional no tiene horarios');
+    }
+
+    const diaActual = this.obtenerDiaTexto(fecha);
+
+    // Filtramos solo los horarios activos de ese día
+    const horariosDelDia = profesional.Horario.filter(
+      (h) => h.dia === diaActual && h.activo,
+    );
+
+    if (!horariosDelDia.length) {
+      return [];
     }
 
     const turnos = await this.turnosRepository.find({
@@ -72,13 +99,13 @@ export class TurnosService {
       },
     });
 
-    const slots = new Set<string>();
-
     const horasOcupadas = new Set(
       turnos.map((t) => this.normalizarHora(t.hora)),
     );
 
-    for (const h of profesional.Horario) {
+    const slots = new Set<string>();
+
+    for (const h of horariosDelDia) {
       const generados = this.generarSlots(
         h.horaInicio,
         h.horaFin,

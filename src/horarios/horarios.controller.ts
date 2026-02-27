@@ -32,6 +32,13 @@ export class HorariosController {
     return this.horariosService.create(user.sub, user.role, createHorarioDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PACIENTE', 'PROFESIONAL')
+  @Get('profesional/:idProfesional')
+  horariosProfesional(@Param('idProfesional') idProfesional: string) {
+    return this.horariosService.horariosProfesional(idProfesional);
+  }
+
   @Get()
   findAll() {
     return this.horariosService.findAll();

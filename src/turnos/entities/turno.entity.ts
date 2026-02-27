@@ -24,7 +24,9 @@ export class Turnos {
   @ManyToOne(() => User, (user) => user.turnos)
   user: User;
 
-  @ManyToOne(() => Profesional, (prof) => prof.TurnosProfesional)
+  @ManyToOne(() => Profesional, (prof) => prof.TurnosProfesional, {
+    onDelete: 'CASCADE',
+  })
   profesional: Profesional;
 
   @Column({ type: 'date' })
@@ -42,6 +44,9 @@ export class Turnos {
     default: estadoTurno.RESERVADO,
   })
   estado: estadoTurno;
+
+  @Column({ default: false })
+  recordatorioEnviado: boolean;
 
   @CreateDateColumn()
   creado: Date;

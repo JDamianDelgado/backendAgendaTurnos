@@ -1,26 +1,99 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMensajeDto } from './dto/create-mensaje.dto';
-import { UpdateMensajeDto } from './dto/update-mensaje.dto';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { estadoTurno } from 'src/turnos/entities/turno.entity';
+import { Repository } from 'typeorm';
+import { Conversacion } from 'src/conversacion/entities/conversacion.entity';
+import { Mensaje } from './entities/mensaje.entity';
 
 @Injectable()
 export class MensajesService {
-  create(createMensajeDto: CreateMensajeDto) {
-    return 'This action adds a new mensaje';
+  constructor(
+    @InjectRepository(Mensaje)
+    private readonly mensajesRepository: Repository<Mensaje>,
+    @InjectRepository(Conversacion)
+    private readonly conversacionRepository: Repository<Conversacion>,
+  ) {}
+
+  private resolverEmisor(conversacion: Conversacion, idUser: string) {
+    if (conversacion.paciente.idUser === idUser) {
+      return 'PACIENTE' as const;
+    }
+
+    if (conversacion.profesional.idUser === idUser) {
+      return 'PROFESIONAL' as const;
+    }
+
+    throw new ForbiddenException('No tienes permiso para enviar mensajes aqui');
   }
 
-  findAll() {
-    return `This action returns all mensajes`;
+  async enviarMensaje(
+    idConversacion: string,
+    idUser: string,
+    contenido: string,
+  ) {
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { idConversacion },
+      relations: ['paciente', 'profesional', 'turno'],
+    });
+
+    if (!conversacion) {
+      throw new NotFoundException('Conversacion no encontrada');
+    }
+
+    const emisor = this.resolverEmisor(conversacion, idUser);
+
+    if (
+      conversacion.cerrada ||
+      conversacion.turno.estado !== estadoTurno.RESERVADO
+    ) {
+      throw new BadRequestException('La conversacion esta cerrada');
+    }
+
+    const mensaje = this.mensajesRepository.create({
+      contenido,
+      emisor,
+      leido: false,
+      conversacion,
+    });
+
+    return this.mensajesRepository.save(mensaje);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} mensaje`;
-  }
+  async marcarLeidos(idConversacion: string, idUser: string) {
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { idConversacion },
+      relations: ['paciente', 'profesional'],
+    });
 
-  update(id: number, updateMensajeDto: UpdateMensajeDto) {
-    return `This action updates a #${id} mensaje`;
-  }
+    if (!conversacion) {
+      throw new NotFoundException('Conversacion no encontrada');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} mensaje`;
+    const emisorActual = this.resolverEmisor(conversacion, idUser);
+    const emisorContrario =
+      emisorActual === 'PACIENTE' ? 'PROFESIONAL' : 'PACIENTE';
+
+    const mensajesNoLeidos = await this.mensajesRepository.find({
+      where: {
+        conversacion: { idConversacion },
+        emisor: emisorContrario,
+        leido: false,
+      },
+      relations: ['conversacion'],
+    });
+
+    if (mensajesNoLeidos.length > 0) {
+      mensajesNoLeidos.forEach((mensaje) => {
+        mensaje.leido = true;
+      });
+      await this.mensajesRepository.save(mensajesNoLeidos);
+    }
+
+    return { message: 'Mensajes marcados como leidos' };
   }
 }

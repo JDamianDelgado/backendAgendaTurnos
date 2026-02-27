@@ -8,7 +8,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -18,8 +17,10 @@ export class Conversacion {
   @PrimaryGeneratedColumn('uuid')
   idConversacion: string;
 
-  @OneToOne(() => Turnos)
-  @JoinColumn()
+  @ManyToOne(() => Turnos, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'idTurno' })
   turno: Turnos;
 
   @ManyToOne(() => User)

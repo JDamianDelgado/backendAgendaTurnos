@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import { userRole } from 'src/auth/entities/auth.entity';
 import { Profesional } from 'src/profesional/entities/profesional.entity';
 import { Turnos } from 'src/turnos/entities/turno.entity';
@@ -26,6 +25,12 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ nullable: true })
+  resetPasswordToken?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpiresAt?: Date | null;
 
   @OneToMany(() => Turnos, (turno) => turno.user)
   turnos: Turnos[];

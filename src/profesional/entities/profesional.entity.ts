@@ -15,8 +15,10 @@ export class Profesional {
   @PrimaryGeneratedColumn('uuid')
   idProfesional: string;
 
-  @OneToOne(() => User, (user) => user.profesional)
-  @JoinColumn()
+  @OneToOne(() => User, (user) => user.profesional, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'idUser' })
   UserProfesional: User;
 
   @Column()

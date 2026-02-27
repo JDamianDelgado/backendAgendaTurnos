@@ -26,33 +26,54 @@ export class HorariosService {
 
   async create(id: string, role: string, data: CreateHorarioDto) {
     if (!id || !role || !data) {
-      throw new BadRequestException('datos incompletos ');
+      throw new BadRequestException('Datos incompletos');
     }
 
     const user = await this.userRepository.findOne({
       where: { idUser: id },
       relations: ['profesional'],
     });
+
     if (!user || user.role !== userRole.PROFESIONAL) {
-      throw new BadRequestException('No se puede realizar esta accion');
+      throw new BadRequestException('No se puede realizar esta acción');
     }
-    if (!user.profesional?.descripcion || !user.profesional.idProfesional) {
+
+    if (!user.profesional?.idProfesional) {
       throw new BadRequestException('Crea tu perfil profesional');
     }
+    const existeHorario = await this.horarioRepository.findOne({
+      where: {
+        dia: data.dia,
+        profesional: {
+          idProfesional: user.profesional.idProfesional,
+        },
+      },
+      relations: ['profesional'],
+    });
+
+    if (existeHorario) {
+      throw new BadRequestException(
+        `Ya existe un horario creado para el día ${data.dia}`,
+      );
+    }
     const { dia, horaInicio, horaFin, duracionTurno, activo } = data;
-    const create = this.horarioRepository.create({
-      horaInicio: horaInicio,
-      duracionTurno: duracionTurno,
-      activo: activo || true,
-      horaFin: horaFin,
-      dia: dia,
+
+    const nuevoHorario = this.horarioRepository.create({
+      dia,
+      horaInicio,
+      horaFin,
+      duracionTurno,
+      activo: activo ?? true,
       profesional: user.profesional,
     });
-    const save = await this.horarioRepository.save(create);
-    if (!save || !create) {
-      throw new BadRequestException('No se pudo realizar accion ');
+
+    const saved = await this.horarioRepository.save(nuevoHorario);
+
+    if (!saved) {
+      throw new BadRequestException('No se pudo crear el horario');
     }
-    return save;
+
+    return saved;
   }
 
   async misHorarios(id: string) {
@@ -117,11 +138,7 @@ export class HorariosService {
     if (!horarioExiste) {
       throw new NotFoundException('No se encontro horario');
     }
-    // if (horarioExiste.profesional.UserProfesional.idUser !== user.idUser) {
-    //   throw new BadRequestException(
-    //     'No tienes permitido modificar este horario',
-    //   );
-    // }
+
     this.horarioRepository.merge(
       horarioExiste,
       updateHorarioDto as DeepPartial<Horarios>,
@@ -159,5 +176,16 @@ export class HorariosService {
         error,
       );
     }
+  }
+  async horariosProfesional(idProfesional: string) {
+    const profesional = await this.profesionalRepository.findOne({
+      where: { idProfesional: idProfesional },
+      relations: ['Horario'],
+    });
+
+    if (!profesional) {
+      throw new BadRequestException('No se encontro profesional');
+    }
+    return profesional.Horario;
   }
 }

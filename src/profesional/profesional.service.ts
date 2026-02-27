@@ -100,7 +100,11 @@ export class ProfesionalService {
     });
 
     if (!prof || role !== userRole.PROFESIONAL) {
-      throw new NotFoundException('No se encontro profesional');
+      throw new NotFoundException('Usuario profesional no encontrado');
+    }
+
+    if (!prof.profesional) {
+      throw new NotFoundException('Perfil profesional no encontrado');
     }
     return prof;
   }
@@ -116,7 +120,7 @@ export class ProfesionalService {
       where: { UserProfesional: { idUser: user.idUser } },
     });
     if (!perfilProfesional) {
-      throw new BadRequestException('No esta autorizado');
+      throw new NotFoundException('Perfil profesional no encontrado');
     }
 
     const profesionalData = this.profesionalRepository.merge(
