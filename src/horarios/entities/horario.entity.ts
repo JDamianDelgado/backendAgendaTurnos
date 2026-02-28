@@ -18,7 +18,7 @@ export class Horarios {
   @Column({ default: 60 })
   duracionTurno: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   activo: boolean;
 
   @ManyToOne(() => Profesional, (prof) => prof.Horario, {

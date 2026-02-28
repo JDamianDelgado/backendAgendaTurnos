@@ -56,8 +56,9 @@ export class AuthService {
   }
 
   async LoginUser(data: UpdateAuthDto): Promise<authResponse> {
+    const emailLowerCase = data.email.toLowerCase();
     const user = await this.userRepository.findOne({
-      where: { email: data.email },
+      where: { email: emailLowerCase },
     });
     if (!user) {
       throw new UnauthorizedException('Credenciales invalidas');
@@ -88,7 +89,10 @@ export class AuthService {
     }
 
     const tokenPlano = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(tokenPlano).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(tokenPlano)
+      .digest('hex');
     const expiracion = new Date(Date.now() + 15 * 60 * 1000);
 
     user.resetPasswordToken = tokenHash;

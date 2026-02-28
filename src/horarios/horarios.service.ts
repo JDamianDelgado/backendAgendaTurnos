@@ -63,7 +63,7 @@ export class HorariosService {
       horaInicio,
       horaFin,
       duracionTurno,
-      activo: activo ?? true,
+      activo: activo ?? false,
       profesional: user.profesional,
     });
 
